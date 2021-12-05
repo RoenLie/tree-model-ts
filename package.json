@@ -1,0 +1,57 @@
+{
+	"name": "tree-model-ts",
+	"version": "1.0.0",
+	"author": "Kristoffer Roen-Lie",
+	"license": "MIT",
+	"description": "An updated ESM & TS version of tree-model-js originally created by João Nuno Silva <jnss81@gmail.com> (http://jnuno.com).",
+	"main": "dist/index.js",
+	"types": "dist/index.d.js",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"files": [
+		"dist",
+		"src",
+		"package.json",
+		"README.md"
+	],
+	"scripts": {
+		"test": "uvu test \\.test\\.ts$ -r tsm",
+		"test:coverage": "c8 --include=src npm test",
+		"test:coverage:report": "npm run test:coverage && c8 report --reporter=text-lcov > coverage/lcov.info",
+		"dev": "tsup src/index.ts --dts --format cjs,esm --watch",
+		"build": "tsup src/index.ts --dts --format cjs,esm"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "^5.5.0",
+		"@typescript-eslint/parser": "^5.5.0",
+		"c8": "^7.10.0",
+		"chai": "^4.3.4",
+		"eslint": "^8.4.0",
+		"sinon": "^12.0.1",
+		"tslib": "^2.3.1",
+		"tsm": "^2.2.1",
+		"tsup": "^5.10.1",
+		"typescript": "^4.5.2",
+		"uvu": "^0.5.2"
+	},
+	"#devDependencyMeta": {
+		"eslint": "linting library for style and coding rules",
+		"@typescript-eslint/eslint-plugin": "plugin for typescript spesific eslinting",
+		"@typescript-eslint/parser": "parser for typescript spesific eslinting",
+		"tslib": "typescript types",
+		"typescript": "typescript base library",
+		"tsup": "esbuild based bundler",
+		"uvu": "testing framework",
+		"tsm": "typescript loader for uvu testing framework",
+		"chai": "test assertion library",
+		"sinon": "testing library used for spies and mocking",
+		"c8": "library for charting test coverage"
+	}
+}

@@ -1,0 +1,53 @@
+{
+	"compilerOptions": {
+		"importHelpers": true,
+		"removeComments": true,
+		"baseUrl": ".",
+		"rootDir": ".",
+		"outDir": "./types",
+		"target": "ES2021",
+		"module": "es2020",
+		"moduleResolution": "Node",
+		"lib": [
+			"ES2021",
+		],
+		"types": [],
+		"paths": {},
+		"strict": true,
+		"strictPropertyInitialization": false,
+		"forceConsistentCasingInFileNames": true,
+		"allowSyntheticDefaultImports": true,
+		"noImplicitOverride": true,
+		"allowJs": true,
+		"incremental": false, // turned off for using tsup
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"resolveJsonModule": true,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"noFallthroughCasesInSwitch": true,
+		"strictNullChecks": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"noImplicitReturns": false,
+		"noImplicitAny": true,
+		"noImplicitThis": true,
+		"isolatedModules": true,
+		"sourceMap": true,
+		"declaration": true, // enables or disables d.ts files from being generated.
+		"declarationMap": true, // makes it so that ctrl clicking sends you to the ts file instead of d.ts
+		"noEmit": true, // stops the tsc compiler from emitting any files.
+		"emitDeclarationOnly": false // makes the compiler only emit .d.ts files.
+	},
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.d.ts",
+	],
+	"exclude": [
+		"dist",
+		"node_modules",
+		"locales",
+		"public",
+		".vscode",
+	]
+}

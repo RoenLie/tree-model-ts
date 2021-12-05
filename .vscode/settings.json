@@ -1,0 +1,46 @@
+{
+	"peacock.color": "rgb(19, 35, 58)",
+	"workbench.colorCustomizations": {
+		"activityBar.activeBackground": "#203a60",
+		"activityBar.activeBorder": "#bf4074",
+		"activityBar.background": "#203a60",
+		"activityBar.foreground": "#e7e7e7",
+		"activityBar.inactiveForeground": "#e7e7e799",
+		"activityBarBadge.background": "#bf4074",
+		"activityBarBadge.foreground": "#e7e7e7",
+		"sash.hoverBorder": "#203a60",
+		"statusBar.background": "#13233a",
+		"statusBar.foreground": "#e7e7e7",
+		"statusBarItem.hoverBackground": "#203a60",
+		"statusBarItem.remoteBackground": "#13233a",
+		"statusBarItem.remoteForeground": "#e7e7e7",
+		"titleBar.activeBackground": "#13233a",
+		"titleBar.activeForeground": "#e7e7e7",
+		"titleBar.inactiveBackground": "#13233a99",
+		"titleBar.inactiveForeground": "#e7e7e799"
+	},
+	"editor.bracketPairColorization.enabled": true,
+	"editor.guides.bracketPairs": "active",
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": true
+	},
+	"eslint.run": "onSave",
+	"eslint.useESLintClass": true,
+	"eslint.format.enable": true,
+	"eslint.validate": [
+		"javascript",
+		"typescript",
+	],
+	"[javascript]": {
+		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
+	},
+	"typescript.format.insertSpaceAfterTypeAssertion": true,
+	"typescript.format.semicolons": "insert",
+	"typescript.preferences.importModuleSpecifier": "project-relative",
+	"typescript.preferences.quoteStyle": "single",
+	"typescript.updateImportsOnFileMove.enabled": "always",
+}
