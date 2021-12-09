@@ -1,9 +1,12 @@
+import type { Fn } from './helpers';
 import { Node } from './Node';
 
 
 function depthFirstPreOrder(
-	this: Node, callback: any, context: Node,
+	this: Node, callback: Fn, context: Node,
 ): boolean {
+	//console.log( callback );
+
 	let keepGoing = callback.call( context, this );
 	for ( let i = 0, childCount = this.children.length; i < childCount; i++ ) {
 		if ( keepGoing === false )
@@ -16,7 +19,7 @@ function depthFirstPreOrder(
 }
 
 function depthFirstPostOrder(
-	this: Node, callback: ( node: Node ) => boolean, context: Node,
+	this: Node, callback: Fn, context: Node,
 ): boolean {
 	let keepGoing;
 
@@ -32,7 +35,7 @@ function depthFirstPostOrder(
 }
 
 function breadthFirst(
-	this: Node, callback: ( node: Node ) => boolean, context: Node,
+	this: Node, callback: Fn, context: Node,
 ): any {
 	const queue = [ this ];
 	( function processQueue() {
@@ -50,9 +53,9 @@ function breadthFirst(
 
 export type Strategy<T> = {[Property in keyof T]: T[Property];}
 type StrategiesBase = {
-	pre: ( this: Node, callback: ( node: Node ) => any, context: Node ) => boolean;
-	post: ( this: Node, callback: ( node: Node ) => any, context: Node ) => boolean;
-	breadth: ( this: Node, callback: ( node: Node ) => any, context: Node ) => any;
+	pre: ( this: Node, callback: Fn, context: Node ) => boolean;
+	post: ( this: Node, callback: Fn, context: Node ) => boolean;
+	breadth: ( this: Node, callback: Fn, context: Node ) => any;
 }
 
 export const walkStrategies: Strategy<StrategiesBase> = {

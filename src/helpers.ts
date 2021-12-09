@@ -58,6 +58,12 @@ export function addChild( self: Node, child: Node, insertIndex?: number ) {
 }
 
 
+export type IncArgs = {
+	ctx?: Node;
+	options?: {
+		strategy: 'pre' | 'post' | 'breadth';
+	};
+}
 export type ParsedArgs = {
 	ctx: Node;
 	fn: ( node: Node ) => boolean;
@@ -74,41 +80,23 @@ export type ParsedArgs = {
  * function will be saved to args.fn. The last optional argument is the context on
  * which the callback function will be called. It will be available in args.ctx.
  */
-export function parseArgs( ...args: any[] ) {
-	const pArgs: ParsedArgs = {
+export type Fn = ( node: Node ) => boolean;
+export type NullableFn = ( ( node: Node ) => boolean ) | null;
+export function parseArgs( fn: NullableFn, _args?: IncArgs ) {
+	const defaultArgs: ParsedArgs = {
 		ctx:     undefined as any,
 		fn:      () => true,
 		options: { strategy: 'pre' },
 	};
 
-	if ( args.length === 1 )
-		if ( typeof args[0] === 'function' )
-			pArgs.fn = args[0];
-		else
-			pArgs.options = args[0];
+	const args = {
+		...defaultArgs,
+		..._args,
+		fn,
+	} as ParsedArgs;
 
-
-	if ( args.length === 2 )
-		if ( typeof args[ 0 ] === 'function' ) {
-			pArgs.fn = args[ 0 ];
-			pArgs.ctx = args[ 1 ];
-		}
-		else {
-			pArgs.options = args[ 0 ];
-			pArgs.fn = args[ 1 ];
-		}
-
-
-	if ( args.length !== 1 && args.length !== 2 ) {
-		args?.[0] && ( pArgs.options = args[ 0 ] );
-		args?.[ 1 ] && ( pArgs.fn = args[ 1 ] );
-		args?.[ 2 ] && ( pArgs.ctx = args[ 2 ] );
-	}
-
-
-	if ( !walkStrategies[ pArgs.options.strategy ] )
+	if ( !walkStrategies[ args.options.strategy ] )
 		throw new Error( 'Unknown tree walk strategy. Valid strategies are \'pre\' [default], \'post\' and \'breadth\'.' );
 
-
-	return pArgs;
+	return args;
 }

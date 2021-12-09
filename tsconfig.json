@@ -10,8 +10,11 @@
 		"moduleResolution": "Node",
 		"lib": [
 			"ES2021",
+			"DOM"
 		],
-		"types": [],
+		"types": [
+			"node"
+		],
 		"paths": {},
 		"strict": true,
 		"strictPropertyInitialization": false,
@@ -42,6 +45,7 @@
 	"include": [
 		"src/**/*.ts",
 		"src/**/*.d.ts",
+		"examples/**/*.ts"
 	],
 	"exclude": [
 		"dist",

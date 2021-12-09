@@ -25,10 +25,12 @@
 		"test:coverage": "c8 --include=src npm test",
 		"test:coverage:report": "npm run test:coverage && c8 report --reporter=text-lcov > coverage/lcov.info",
 		"dev": "tsup src/index.ts --dts --format cjs,esm --watch",
-		"build": "tsup src/index.ts --dts --format cjs,esm"
+		"build": "tsup src/index.ts --dts --format cjs,esm",
+		"example1": "node --no-warnings --experimental-modules --loader tsm ./examples/findNodePath.ts"
 	},
 	"dependencies": {},
 	"devDependencies": {
+		"@types/node": "^16.11.12",
 		"@typescript-eslint/eslint-plugin": "^5.5.0",
 		"@typescript-eslint/parser": "^5.5.0",
 		"c8": "^7.10.0",

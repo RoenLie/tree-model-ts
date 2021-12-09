@@ -1,13 +1,16 @@
-import type { ParsedArgs } from './helpers';
-import { addChild, hasComparatorFunction, parseArgs } from './helpers';
+import {
+	IncArgs, NullableFn, parseArgs,
+	ParsedArgs, addChild, hasComparatorFunction,
+} from './helpers';
 import { walkStrategies } from './strategies';
+import { Model } from './TreeModel';
 
 
 export class Node {
 
 	public parent: Node | undefined = undefined;
 	public children: any[] = [];
-	constructor( public config: any, public model: any ) {
+	constructor( public config: any, public model: Model ) {
 	}
 
 	public isRoot() {
@@ -71,38 +74,45 @@ export class Node {
 		return this.parent!.children.indexOf( this );
 	}
 
-	public walk( ...iArgs: any[] ) {
-		const args = parseArgs.apply( this, iArgs );
-		walkStrategies[ args.options.strategy ].call( this, args.fn, args.ctx );
+	public walk( fn: NullableFn = () => true, _args?: IncArgs ) {
+		const args: ParsedArgs = parseArgs( fn, _args );
+		fn = fn || ( () => true );
+
+		walkStrategies[ args.options.strategy ].call( this, fn!, args.ctx );
 	}
 
-	public all( ...iArgs: any[] ) {
+	public all( fn: NullableFn = () => true, _args?: IncArgs ) {
 		const all: Node[] = [];
-		const args = parseArgs.apply( this, iArgs );
+		const args: ParsedArgs = parseArgs( fn, _args );
+		fn = fn || ( () => true );
 
-		args.fn = args.fn || ( () => true );
 		walkStrategies[ args.options.strategy ].call( this, ( node: Node ) => {
-			if ( args.fn?.call( args.ctx, node ) )
+			if ( fn?.call( args.ctx, node ) )
 				all.push( node );
+
+			return true;
 		}, args.ctx );
 
 		return all;
 	}
 
-	public first( ...iArgs: any[] ) {
-		let first;
-		const args: ParsedArgs = parseArgs.apply( this, iArgs );
-		args.fn = args.fn || ( () => true );
+	public first( fn: NullableFn = () => true, _args?: IncArgs ) {
+		let first: Node | undefined = undefined;
+
+		const args: ParsedArgs = parseArgs( fn, _args );
+		fn = fn || ( () => true );
 
 		walkStrategies[ args.options.strategy ].call( this, ( node: Node ) => {
-			if ( args.fn!.call( args.ctx, node ) ) {
+			if ( fn?.call( args.ctx, node ) ) {
 				first = node;
 
 				return false;
 			}
+
+			return true;
 		}, args.ctx );
 
-		return first;
+		return first as Node | undefined;
 	}
 
 	public drop() {

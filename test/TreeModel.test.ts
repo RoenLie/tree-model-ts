@@ -324,7 +324,7 @@ traversal.before.each( ( context ) => {
 
 traversal( 'walk depthFirstPreOrder by default\n' +
 'should traverse the nodes until the callback returns false', function( { root, spy121 } ) {
-	root.walk( spy121, this );
+	root.walk( spy121, { ctx: this } );
 	assert.strictEqual( spy121.callCount, 5 );
 	assert( spy121.alwaysCalledOn( this ) );
 	assert( spy121.getCall( 0 ).calledWithExactly( root.first( idEq( 1 ) ) ) );
@@ -336,7 +336,7 @@ traversal( 'walk depthFirstPreOrder by default\n' +
 
 traversal( 'walk depthFirstPostOrder\n' +
 'should traverse the nodes until the callback returns false', function( { root, spy121 } ) {
-	root.walk( { strategy: 'post' }, spy121, this );
+	root.walk( spy121, { options: { strategy: 'post' }, ctx: this } );
 	assert.strictEqual( spy121.callCount, 3 );
 	assert( spy121.alwaysCalledOn( this ) );
 	assert( spy121.getCall( 0 ).calledWithExactly( root.first( idEq( 111 ) ) ) );
@@ -346,7 +346,7 @@ traversal( 'walk depthFirstPostOrder\n' +
 
 traversal( 'walk depthFirstPostOrder (2)\n' +
 'should traverse the nodes until the callback returns false', function( { root, spy12 } ) {
-	root.walk( { strategy: 'post' }, spy12, this );
+	root.walk( spy12, { options: { strategy: 'post' }, ctx: this } );
 	assert.strictEqual( spy12.callCount, 5 );
 	assert( spy12.alwaysCalledOn( this ) );
 	assert( spy12.getCall( 0 ).calledWithExactly( root.first( idEq( 111 ) ) ) );
@@ -358,7 +358,7 @@ traversal( 'walk depthFirstPostOrder (2)\n' +
 
 traversal( 'walk breadthFirst\n' +
 'should traverse the nodes until the callback returns false', function( { root, spy121 } ) {
-	root.walk( { strategy: 'breadth' }, spy121, this );
+	root.walk( spy121, { options: { strategy: 'breadth' }, ctx: this } );
 	assert.strictEqual( spy121.callCount, 5 );
 	assert( spy121.alwaysCalledOn( this ) );
 	assert( spy121.getCall( 0 ).calledWithExactly( root.first( idEq( 1 ) ) ) );
@@ -371,7 +371,7 @@ traversal( 'walk breadthFirst\n' +
 traversal( 'walk using unknown strategy\n' +
 'should throw an error warning about the strategy', function( { root, callback121 } ) {
 	assert.throws(
-		root.walk.bind( root, { strategy: 'unknownStrategy' }, callback121, this ),
+		root.walk.bind( root, callback121, { options: { strategy: 'unknownStrategy' }, ctx: this } ),
 		Error,
 		'Unknown tree walk strategy. Valid strategies are \'pre\' [default], \'post\' and \'breadth\'.',
 	);
@@ -477,12 +477,12 @@ defaultConfig_first( 'should get the first node when no predicate is given', ( {
 } );
 
 defaultConfig_first( 'should get the first node with a different strategy when the predicate returns true', ( { root } ) => {
-	const first = root.first( { strategy: 'post' }, () => true );
+	const first = root.first( null, { options: { strategy: 'post' } } );
 	assert.equal( first.model.id, 111 );
 } );
 
 defaultConfig_first( 'should get the first node with a different strategy when no predicate is given', ( { root } ) => {
-	const first = root.first( { strategy: 'post' } );
+	const first = root.first( null, { options: { strategy: 'post' } } );
 	assert.equal( first.model.id, 111 );
 } );
 

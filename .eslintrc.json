@@ -10,14 +10,12 @@
 		"sourceType": "module"
 	},
 	"plugins": [
-		"@typescript-eslint",
-		"lit"
+		"@typescript-eslint"
 	],
 	"extends": [
 		"eslint:recommended",
 		"plugin:@typescript-eslint/eslint-recommended",
-		"plugin:@typescript-eslint/recommended",
-		"plugin:lit/recommended"
+		"plugin:@typescript-eslint/recommended"
 	],
 	"overrides": [
 		{ /* Typescript, Javascript */
