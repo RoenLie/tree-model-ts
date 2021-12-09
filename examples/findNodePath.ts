@@ -31,8 +31,10 @@ const hierarchy = {
 							id:       '1_3_1_1',
 							children: [
 								{
-									id:       '1_3_1_1_1',
-									children: [],
+									id:          '1_3_1_1_1',
+									children:    [],
+									randomProp1: 'hei',
+									randomProp2: 'nei',
 								},
 							],
 						},

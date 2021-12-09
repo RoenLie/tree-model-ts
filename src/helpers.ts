@@ -66,26 +66,16 @@ export type IncArgs = {
 }
 export type ParsedArgs = {
 	ctx: Node;
-	fn: ( node: Node ) => boolean;
 	options: {
 		strategy: 'pre' | 'post' | 'breadth';
 	};
 }
-
-/**
- * Parse the arguments of traversal functions. These functions can take one optional
- * first argument which is an options object. If present, this object will be stored
- * in args.options. The only mandatory argument is the callback function which can
- * appear in the first or second position (if an options object is given). This
- * function will be saved to args.fn. The last optional argument is the context on
- * which the callback function will be called. It will be available in args.ctx.
- */
 export type Fn = ( node: Node ) => boolean;
 export type NullableFn = ( ( node: Node ) => boolean ) | null;
+
 export function parseArgs( fn: NullableFn, _args?: IncArgs ) {
 	const defaultArgs: ParsedArgs = {
 		ctx:     undefined as any,
-		fn:      () => true,
 		options: { strategy: 'pre' },
 	};
 
