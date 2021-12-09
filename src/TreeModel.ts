@@ -17,20 +17,20 @@ export class TreeModel {
 	}
 
 	public parse( model: Model ) {
-		if ( !( model instanceof Object ) )
+		if ( !( toString.call( model ) == '[object Object]' ) )
 			throw new TypeError( 'Model must be of type object.' );
 
 		const node = new Node( this.config, model );
-		if ( model[ this.config.childrenPropertyName ] instanceof Array ) {
-			if ( this.config.modelComparatorFn )
-				model[ this.config.childrenPropertyName ] = mergeSort(
-					this.config.modelComparatorFn,
-					model[ this.config.childrenPropertyName ],
-				);
+		if ( !Array.isArray( model[ this.config.childrenPropertyName ] ) )
+			return node;
 
-			for ( let i = 0, childCount = model[ this.config.childrenPropertyName ].length; i < childCount; i++ )
-				addChildToNode( node, this.parse( model[ this.config.childrenPropertyName ][ i ] ) );
-		}
+		this.config.modelComparatorFn &&
+			( model[ this.config.childrenPropertyName ] = mergeSort(
+				this.config.modelComparatorFn, model[ this.config.childrenPropertyName ],
+			) );
+
+		for ( let i = 0, childCount = model[ this.config.childrenPropertyName ].length; i < childCount; i++ )
+			addChildToNode( node, this.parse( model[ this.config.childrenPropertyName ][ i ] ) );
 
 		return node;
 	}
