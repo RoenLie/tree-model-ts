@@ -12,7 +12,7 @@ export type Model = { [childrenPropName: string]: Model[] | any; id: any }
 
 export class TreeModel {
 
-	constructor( public config: Config = { childrenPropertyName: 'children' } ) {
+	constructor( public config: Config ) {
 		config?.childrenPropertyName || ( config.childrenPropertyName = 'children' );
 	}
 
