@@ -2,43 +2,42 @@ import type { Fn } from './helpers';
 import { Node } from './Node';
 
 
-function depthFirstPreOrder(
-	this: Node, callback: Fn, context: Node,
-): boolean {
-	//console.log( callback );
-
-	let keepGoing = callback.call( context, this );
-	for ( let i = 0, childCount = this.children.length; i < childCount; i++ ) {
+const depthFirstPreOrder = <I extends string, C extends string>(
+	node: Node<I, C>, callback: Fn<I, C>,
+): boolean => {
+	let keepGoing = callback( node );
+	for ( let i = 0, childCount = node.children.length; i < childCount; i++ ) {
 		if ( keepGoing === false )
 			return false;
 
-		keepGoing = depthFirstPreOrder.call( this.children[i], callback, context );
+		keepGoing = depthFirstPreOrder( node.children[i], callback );
 	}
 
 	return keepGoing;
-}
+};
 
-function depthFirstPostOrder(
-	this: Node, callback: Fn, context: Node,
-): boolean {
+const depthFirstPostOrder = <I extends string, C extends string>(
+	node: Node<I, C>, callback: Fn<I, C>,
+): boolean => {
 	let keepGoing;
 
-	for ( let i = 0, childCount = this.children.length; i < childCount; i++ ) {
-		keepGoing = depthFirstPostOrder.call( this.children[ i ], callback, context );
+	for ( let i = 0, childCount = node.children.length; i < childCount; i++ ) {
+		keepGoing = depthFirstPostOrder( node.children[ i ], callback );
 		if ( keepGoing === false )
 			return false;
 	}
 
-	keepGoing = callback.call( context, this );
+	keepGoing = callback( node );
 
 	return keepGoing;
-}
+};
 
-function breadthFirst(
-	this: Node, callback: Fn, context: Node,
-): any {
-	const queue = [ this ];
-	( function processQueue() {
+const breadthFirst = <I extends string, C extends string>(
+	node: Node<I, C>, callback: Fn<I, C>,
+): void => {
+	const queue = [ node ];
+
+	const processQueue = () => {
 		if ( queue.length === 0 )
 			return;
 
@@ -46,16 +45,18 @@ function breadthFirst(
 		for ( let i = 0, childCount = node!.children.length; i < childCount; i++ )
 			queue.push( node!.children[ i ] );
 
-		if ( callback.call( context, node! ) !== false )
+		if ( callback( node! ) !== false )
 			processQueue();
-	} )();
-}
+	};
+
+	processQueue();
+};
 
 export type Strategy<T> = {[Property in keyof T]: T[Property];}
 type StrategiesBase = {
-	pre: ( this: Node, callback: Fn, context: Node ) => boolean;
-	post: ( this: Node, callback: Fn, context: Node ) => boolean;
-	breadth: ( this: Node, callback: Fn, context: Node ) => any;
+	pre: typeof depthFirstPreOrder
+	post: typeof depthFirstPostOrder;
+	breadth: typeof breadthFirst;
 }
 
 export const walkStrategies: Strategy<StrategiesBase> = {

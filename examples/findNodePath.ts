@@ -53,6 +53,7 @@ const root = treeModel.parse( hierarchy );
 
 const deepChild = root.first( ( node ) =>
 	!!( node.model.id == '1_3_1_1_1' ) );
+	//!!( node.model.id == '1_3' ) );
 
 
 console.log( 'found node', deepChild );

@@ -6,7 +6,7 @@ import { spy } from 'sinon';
 
 
 function idEq( id: string | number ) {
-	return function( node: Node ) {
+	return function( node: Node<`id`, `children`> ) {
 		return node.model.id === id;
 	};
 }
@@ -285,11 +285,11 @@ defaultConfig_getPath.run();
 
 /* --------------------------------------------------- */
 
-function callback121( node: Node ) {
+function callback121( node: Node<`id`, `children`> ) {
 	if ( node.model.id === 121 )
 		return false;
 }
-function callback12( node: Node ) {
+function callback12( node: Node<`id`, `children`> ) {
 	if ( node.model.id === 12 )
 		return false;
 }
@@ -322,11 +322,12 @@ traversal.before.each( ( context ) => {
 	context.spy12 = spy( context.callback12 );
 } );
 
+
 traversal( 'walk depthFirstPreOrder by default\n' +
-'should traverse the nodes until the callback returns false', function( { root, spy121 } ) {
-	root.walk( spy121, { ctx: this } );
+'should traverse the nodes until the callback returns false', ( { root, spy121 } ) => {
+	root.walk( spy121 );
 	assert.strictEqual( spy121.callCount, 5 );
-	assert( spy121.alwaysCalledOn( this ) );
+
 	assert( spy121.getCall( 0 ).calledWithExactly( root.first( idEq( 1 ) ) ) );
 	assert( spy121.getCall( 1 ).calledWithExactly( root.first( idEq( 11 ) ) ) );
 	assert( spy121.getCall( 2 ).calledWithExactly( root.first( idEq( 111 ) ) ) );
@@ -335,20 +336,20 @@ traversal( 'walk depthFirstPreOrder by default\n' +
 } );
 
 traversal( 'walk depthFirstPostOrder\n' +
-'should traverse the nodes until the callback returns false', function( { root, spy121 } ) {
-	root.walk( spy121, { options: { strategy: 'post' }, ctx: this } );
+'should traverse the nodes until the callback returns false', ( { root, spy121 } ) => {
+	root.walk( spy121, { strategy: 'post' } );
 	assert.strictEqual( spy121.callCount, 3 );
-	assert( spy121.alwaysCalledOn( this ) );
+
 	assert( spy121.getCall( 0 ).calledWithExactly( root.first( idEq( 111 ) ) ) );
 	assert( spy121.getCall( 1 ).calledWithExactly( root.first( idEq( 11 ) ) ) );
 	assert( spy121.getCall( 2 ).calledWithExactly( root.first( idEq( 121 ) ) ) );
 } );
 
 traversal( 'walk depthFirstPostOrder (2)\n' +
-'should traverse the nodes until the callback returns false', function( { root, spy12 } ) {
-	root.walk( spy12, { options: { strategy: 'post' }, ctx: this } );
+'should traverse the nodes until the callback returns false', ( { root, spy12 } ) => {
+	root.walk( spy12, { strategy: 'post' } );
 	assert.strictEqual( spy12.callCount, 5 );
-	assert( spy12.alwaysCalledOn( this ) );
+
 	assert( spy12.getCall( 0 ).calledWithExactly( root.first( idEq( 111 ) ) ) );
 	assert( spy12.getCall( 1 ).calledWithExactly( root.first( idEq( 11 ) ) ) );
 	assert( spy12.getCall( 2 ).calledWithExactly( root.first( idEq( 121 ) ) ) );
@@ -357,10 +358,10 @@ traversal( 'walk depthFirstPostOrder (2)\n' +
 } );
 
 traversal( 'walk breadthFirst\n' +
-'should traverse the nodes until the callback returns false', function( { root, spy121 } ) {
-	root.walk( spy121, { options: { strategy: 'breadth' }, ctx: this } );
+'should traverse the nodes until the callback returns false', ( { root, spy121 } ) => {
+	root.walk( spy121, { strategy: 'breadth' } );
 	assert.strictEqual( spy121.callCount, 5 );
-	assert( spy121.alwaysCalledOn( this ) );
+
 	assert( spy121.getCall( 0 ).calledWithExactly( root.first( idEq( 1 ) ) ) );
 	assert( spy121.getCall( 1 ).calledWithExactly( root.first( idEq( 11 ) ) ) );
 	assert( spy121.getCall( 2 ).calledWithExactly( root.first( idEq( 12 ) ) ) );
@@ -369,9 +370,9 @@ traversal( 'walk breadthFirst\n' +
 } );
 
 traversal( 'walk using unknown strategy\n' +
-'should throw an error warning about the strategy', function( { root, callback121 } ) {
+'should throw an error warning about the strategy', ( { root, callback121 } ) => {
 	assert.throws(
-		root.walk.bind( root, callback121, { options: { strategy: 'unknownStrategy' }, ctx: this } ),
+		root.walk.bind( root, callback121, { strategy: 'unknownStrategy' } ),
 		Error,
 		'Unknown tree walk strategy. Valid strategies are \'pre\' [default], \'post\' and \'breadth\'.',
 	);
@@ -403,7 +404,7 @@ defaultConfig_all.before.each( ( context ) => {
 } );
 
 defaultConfig_all( 'should get an empty array if no nodes match the predicate', ( { root } ) => {
-	const idLt0 = root.all( ( node: Node ) => {
+	const idLt0 = root.all( ( node ) => {
 		return node.model.id < 0;
 	} );
 	assert.lengthOf( idLt0, 0 );
@@ -421,7 +422,7 @@ defaultConfig_all( 'should get an array with the node itself if only the node ma
 } );
 
 defaultConfig_all( 'should get an array with all nodes that match a given predicate', ( { root } ) => {
-	const idGt100 = root.all( ( node: Node ) => {
+	const idGt100 = root.all( ( node ) => {
 		return node.model.id > 100;
 	} );
 	assert.lengthOf( idGt100, 3 );
@@ -431,7 +432,7 @@ defaultConfig_all( 'should get an array with all nodes that match a given predic
 } );
 
 defaultConfig_all( 'should get an array with all nodes that match a given predicate (2)', ( { root } ) => {
-	const idGt10AndChildOfRoot = root.all( ( node: Node ) => {
+	const idGt10AndChildOfRoot = root.all( ( node ) => {
 		return node.model.id > 10 && node.parent === root;
 	} );
 	assert.lengthOf( idGt10AndChildOfRoot, 2 );
@@ -477,12 +478,12 @@ defaultConfig_first( 'should get the first node when no predicate is given', ( {
 } );
 
 defaultConfig_first( 'should get the first node with a different strategy when the predicate returns true', ( { root } ) => {
-	const first = root.first( null, { options: { strategy: 'post' } } );
+	const first = root.first( null, { strategy: 'post' } );
 	assert.equal( first.model.id, 111 );
 } );
 
 defaultConfig_first( 'should get the first node with a different strategy when no predicate is given', ( { root } ) => {
-	const first = root.first( null, { options: { strategy: 'post' } } );
+	const first = root.first( null, { strategy: 'post' } );
 	assert.equal( first.model.id, 111 );
 } );
 
@@ -562,9 +563,10 @@ const customConfig_parse = suite( 'parse(), with custom configuration', { treeMo
 
 customConfig_parse.before.each( ( context ) => {
 	context.treeModel = new TreeModel( {
+		idPropertyName:       'id',
 		childrenPropertyName: 'deps',
 		modelComparatorFn:    function( a, b ) {
-			return b.id - a.id;
+			return Number( b.id ) - Number( a.id );
 		},
 	} );
 } );
@@ -678,9 +680,10 @@ const customConfig_addChild = suite( 'addChild(), with custom configuration', { 
 
 customConfig_addChild.before.each( ( context ) => {
 	context.treeModel = new TreeModel( {
+		idPropertyName:       'id',
 		childrenPropertyName: 'deps',
 		modelComparatorFn:    function( a, b ) {
-			return b.id - a.id;
+			return Number( b.id ) - Number( a.id );
 		},
 	} );
 } );
@@ -773,9 +776,10 @@ const customConfig_setIndex = suite( 'setIndex(), with custom configuration', { 
 
 customConfig_setIndex.before.each( ( context ) => {
 	context.treeModel = new TreeModel( {
+		idPropertyName:       'id',
 		childrenPropertyName: 'deps',
 		modelComparatorFn:    function( a, b ) {
-			return b.id - a.id;
+			return Number( b.id ) - Number( a.id );
 		},
 	} );
 } );
@@ -797,13 +801,20 @@ customConfig_setIndex.run();
 
 /* --------------------------------------------------- */
 
-const customConfig_drop = suite( 'drop(), with custom configuration', { treeModel: new TreeModel(), root: new TreeModel().parse( { id: 1 } ) } );
+const customConfig_drop = suite(
+	'drop(), with custom configuration',
+	{
+		treeModel: new TreeModel(),
+		root:      new TreeModel().parse( { id: 1 } ),
+	},
+);
 
 customConfig_drop.before.each( ( context ) => {
 	context.treeModel = new TreeModel( {
+		idPropertyName:       'id',
 		childrenPropertyName: 'deps',
 		modelComparatorFn:    function( a, b ) {
-			return b.id - a.id;
+			return Number( b.id ) - Number( a.id );
 		},
 	} );
 
@@ -835,13 +846,17 @@ customConfig_drop.run();
 
 /* --------------------------------------------------- */
 
-const customConfig_hasChildren = suite( 'hasChildren(), with custom configuration', { treeModel: new TreeModel(), root: new TreeModel().parse( { id: 1 } ) } );
+const customConfig_hasChildren = suite( 'hasChildren(), with custom configuration', {
+	treeModel: new TreeModel<`id`, `deps`>(),
+	root:      new TreeModel<`id`, `deps`>().parse( { id: 1, deps: [] } ),
+} );
 
 customConfig_hasChildren.before.each( ( context ) => {
-	context.treeModel = new TreeModel( {
+	context.treeModel = new TreeModel<`id`, `deps`>( {
+		idPropertyName:       'id',
 		childrenPropertyName: 'deps',
 		modelComparatorFn:    function( a, b ) {
-			return b.id - a.id;
+			return Number( b.id ) - Number( a.id );
 		},
 	} );
 

@@ -1,17 +1,16 @@
 import {
-	IncArgs, NullableFn, parseArgs,
-	ParsedArgs, addChild, hasComparatorFunction,
+	NullableFn, parseOptions,
+	addChild, hasComparatorFunction, NodeOptions,
 } from './helpers';
 import { walkStrategies } from './strategies';
-import { Model } from './TreeModel';
+import { Config, Model } from './TreeModel';
 
 
-export class Node {
+export class Node<I extends string = `id`, C extends string = `id`> {
 
-	public parent: Node | undefined = undefined;
+	public parent: Node<I, C> | undefined = undefined;
 	public children: any[] = [];
-	constructor( public config: any, public model: Model ) {
-	}
+	constructor( public config: Config<I, C>, public model: Model<I, C> ) {}
 
 	public isRoot() {
 		return this.parent === undefined;
@@ -21,11 +20,11 @@ export class Node {
 		return this.children.length > 0;
 	}
 
-	public addChild( child: Node ) {
+	public addChild( child: Node<I, C> ) {
 		return addChild( this, child );
 	}
 
-	public addChildAtIndex( child: Node, index: number ) {
+	public addChildAtIndex( child: Node<I, C>, index: number ) {
 		if ( hasComparatorFunction( this ) )
 			throw new Error( 'Cannot add child at index when using a comparator function.' );
 
@@ -48,21 +47,26 @@ export class Node {
 
 		const oldIndex = this.parent!.children.indexOf( this );
 
-		this.parent!.children.splice( index, 0, this.parent!.children.splice( oldIndex, 1 )[ 0 ] );
+		this.parent?.children.splice( index, 0, this.parent!.children.splice( oldIndex, 1 )[ 0 ] );
 
-		this.parent!.model[ this.parent!.config.childrenPropertyName ]
+		this.parent?.model[ this.parent.config.childrenPropertyName ]
 			.splice( index, 0, this.parent!.model[ this.parent!.config.childrenPropertyName ].splice( oldIndex, 1 )[ 0 ] );
 
 		return this;
 	}
 
 	public getPath() {
-		const path = [];
-		( function addToPath( node ) {
+		const path: Node<I, C>[] = [];
+
+		const addToPath = ( node: Node<I, C> | undefined ) => {
+			if ( !node )
+				throw new Error( 'Attempting to add invalid node to path' );
+
 			path.unshift( node );
 			if ( !node.isRoot() )
-				addToPath( node.parent as any );
-		} )( this );
+				addToPath( node.parent );
+		};
+		addToPath( this );
 
 		return path;
 	}
@@ -71,58 +75,59 @@ export class Node {
 		if ( this.isRoot() )
 			return 0;
 
-		return this.parent!.children.indexOf( this );
+		return this.parent?.children.indexOf( this );
 	}
 
-	public walk( fn: NullableFn = () => true, _args?: IncArgs ) {
-		const args: ParsedArgs = parseArgs( fn, _args );
+	public walk( fn: NullableFn<I, C> = () => true, _options?: NodeOptions ) {
+		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
-		walkStrategies[ args.options.strategy ].call( this, fn!, args.ctx );
+		walkStrategies[ options.strategy ]( this, fn! );
 	}
 
-	public all( fn: NullableFn = () => true, _args?: IncArgs ) {
-		const all: Node[] = [];
-		const args: ParsedArgs = parseArgs( fn, _args );
+	public all( fn: NullableFn<I, C> = () => true, _options?: NodeOptions ) {
+		const all: Node<I, C>[] = [];
+		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
-		walkStrategies[ args.options.strategy ].call( this, ( node: Node ) => {
-			if ( fn?.call( args.ctx, node ) )
+		walkStrategies[ options.strategy ]( this, ( node: Node<I, C> ) => {
+			if ( fn?.( node ) )
 				all.push( node );
 
 			return true;
-		}, args.ctx );
+		} );
 
 		return all;
 	}
 
-	public first( fn: NullableFn = () => true, _args?: IncArgs ) {
-		let first: Node | undefined = undefined;
+	public first( fn: NullableFn<I, C> = () => true, _options?: NodeOptions ) {
+		let first: Node<I, C> | undefined = undefined;
 
-		const args: ParsedArgs = parseArgs( fn, _args );
+		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
-		walkStrategies[ args.options.strategy ].call( this, ( node: Node ) => {
-			if ( fn?.call( args.ctx, node ) ) {
+		walkStrategies[ options.strategy ]( this, ( node: Node<I, C> ) => {
+			if ( fn?.( node ) ) {
 				first = node;
 
 				return false;
 			}
 
 			return true;
-		}, args.ctx );
+		} );
 
-		return first as Node | undefined;
+		return first as Node<I, C> | undefined;
 	}
 
 	public drop() {
-		if ( !this.isRoot() ) {
-			const indexOfChild = this?.parent?.children.indexOf( this ) || 0;
-			this?.parent?.children.splice( indexOfChild, 1 );
-			this?.parent?.model[ this.config.childrenPropertyName ].splice( indexOfChild, 1 );
-			this.parent = undefined;
-			delete this.parent;
-		}
+		if ( this.isRoot() )
+			return this;
+
+		const indexOfChild = this?.parent?.children.indexOf( this ) || 0;
+		this?.parent?.children.splice( indexOfChild, 1 );
+		this?.parent?.model[ this.config.childrenPropertyName ].splice( indexOfChild, 1 );
+		this.parent = undefined;
+		delete this.parent;
 
 		return this;
 	}

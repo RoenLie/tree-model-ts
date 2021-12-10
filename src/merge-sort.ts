@@ -1,7 +1,7 @@
 /**
 	 * Sort an array using the merge sort algorithm.
 */
-export function mergeSort( comparatorFn: ( a: any, b: any ) => number, arr: any ): any {
+export function mergeSort( comparatorFn: ( a: any, b: any ) => number, arr: any[] ): any {
 	const len = arr.length;
 	let firstHalf, secondHalf;
 	if ( len >= 2 ) {

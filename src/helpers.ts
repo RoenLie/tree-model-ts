@@ -3,18 +3,22 @@ import { Node } from './Node';
 import { walkStrategies } from './strategies';
 
 
-export function addChildToNode( node: Node, child: Node ) {
+export function addChildToNode<I extends string, C extends string>(
+	node: Node<I, C>, child: Node<I, C>,
+) {
 	child.parent = node;
 	node.children.push( child );
 
 	return child;
 }
 
-export function hasComparatorFunction( node: Node ) {
-	return typeof node.config.modelComparatorFn === 'function';
+export function hasComparatorFunction<I extends string, C extends string>( node: Node<I, C> ) {
+	return toString.call( node.config.modelComparatorFn ) == '[object Function]';
 }
 
-export function addChild( self: Node, child: Node, insertIndex?: number ) {
+export function addChild<I extends string, C extends string>(
+	self: Node<I, C>, child: Node<I, C>, insertIndex?: number,
+): Node<I, C> {
 	let index;
 
 	if ( !( child instanceof Node ) )
@@ -22,14 +26,14 @@ export function addChild( self: Node, child: Node, insertIndex?: number ) {
 
 
 	child.parent = self;
-	if ( !( self.model[ self.config.childrenPropertyName ] instanceof Array ) )
-		self.model[ self.config.childrenPropertyName ] = [];
+	if ( !( toString.call( self.model[ self.config.childrenPropertyName ] ) == '[object Array]' ) )
+		( self.model as any )[ self.config.childrenPropertyName ] = [];
 
 
 	if ( hasComparatorFunction( self ) ) {
 		// Find the index to insert the child
 		index = findInsertIndex(
-			self.config.modelComparatorFn,
+			self.config.modelComparatorFn!,
 			self.model[ self.config.childrenPropertyName ],
 			child.model,
 		);
@@ -53,40 +57,23 @@ export function addChild( self: Node, child: Node, insertIndex?: number ) {
 		self.children.splice( insertIndex, 0, child );
 	}
 
-
 	return child;
 }
 
 
-export type IncArgs = {
-	ctx?: Node;
-	options?: {
-		strategy: 'pre' | 'post' | 'breadth';
-	};
-}
-export type ParsedArgs = {
-	ctx: Node;
-	options: {
-		strategy: 'pre' | 'post' | 'breadth';
-	};
-}
-export type Fn = ( node: Node ) => boolean;
-export type NullableFn = ( ( node: Node ) => boolean ) | null;
+export type NodeOptions = { strategy: 'pre' | 'post' | 'breadth'; };
+export type Fn<I extends string, C extends string> = ( node: Node<I, C> ) => boolean;
+export type NullableFn<I extends string, C extends string> = ( ( node: Node<I, C> ) => boolean ) | null;
+export function parseOptions( _options?: NodeOptions ) {
+	const defaultOptions: NodeOptions = { strategy: 'pre' };
 
-export function parseArgs( fn: NullableFn, _args?: IncArgs ) {
-	const defaultArgs: ParsedArgs = {
-		ctx:     undefined as any,
-		options: { strategy: 'pre' },
-	};
+	const options = {
+		...defaultOptions,
+		..._options,
+	} as NodeOptions;
 
-	const args = {
-		...defaultArgs,
-		..._args,
-		fn,
-	} as ParsedArgs;
-
-	if ( !walkStrategies[ args.options.strategy ] )
+	if ( !walkStrategies[ options.strategy ] )
 		throw new Error( 'Unknown tree walk strategy. Valid strategies are \'pre\' [default], \'post\' and \'breadth\'.' );
 
-	return args;
+	return options;
 }

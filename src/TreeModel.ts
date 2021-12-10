@@ -2,21 +2,29 @@ import { mergeSort } from './merge-sort';
 import { Node } from './Node';
 import { addChildToNode } from './helpers';
 
-type Config = {
+
+export type Config<I extends string, C extends string> = {
+	idPropertyName?: string;
 	childrenPropertyName: string;
-	modelComparatorFn?: ( a: Model, b: Model ) => number;
+	modelComparatorFn?: ( a: Model<I, C>, b: Model<I, C> ) => number;
 }
 
-export type Model = { [childrenPropName: string]: Model[] | any; id: any }
+
+type ModelId<T extends string> = {
+	[P in [T][number]]: string | number;
+}
+type ModelChildren<I extends string, T extends string> = {
+	[P in [T][number]]: Model<I, T>[];
+}
+export type Model<I extends string = `id`, C extends string = `children`> =
+	ModelId<I> & Partial<ModelChildren<I, C>> & { [key: string]: any };
 
 
-export class TreeModel {
+export class TreeModel<I extends string = `id`, C extends string = `children`> {
 
-	constructor( public config: Config ) {
-		config?.childrenPropertyName || ( config.childrenPropertyName = 'children' );
-	}
+	constructor( public config: Config<I, C> = { childrenPropertyName: 'children' } ) {}
 
-	public parse( model: Model ) {
+	public parse( model: Model<I, C> ) {
 		if ( !( toString.call( model ) == '[object Object]' ) )
 			throw new TypeError( 'Model must be of type object.' );
 
@@ -25,7 +33,7 @@ export class TreeModel {
 			return node;
 
 		this.config.modelComparatorFn &&
-			( model[ this.config.childrenPropertyName ] = mergeSort(
+			( ( model as any )[ this.config.childrenPropertyName] = mergeSort(
 				this.config.modelComparatorFn, model[ this.config.childrenPropertyName ],
 			) );
 
