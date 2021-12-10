@@ -1,6 +1,6 @@
 {
 	"name": "tree-model-ts",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"author": "Kristoffer Roen-Lie",
 	"license": "MIT",
 	"description": "An updated ESM & TS version of tree-model-js originally created by João Nuno Silva <jnss81@gmail.com> (http://jnuno.com).",
