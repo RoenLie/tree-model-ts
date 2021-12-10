@@ -6,7 +6,7 @@ import { walkStrategies } from './strategies';
 import { Config, Model } from './TreeModel';
 
 
-export class Node<I extends string = `id`, C extends string = `id`> {
+export class Node<I extends string = `id`, C extends string = `children`> {
 
 	public parent: Node<I, C> | undefined = undefined;
 	public children: any[] = [];
