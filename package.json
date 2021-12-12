@@ -1,9 +1,9 @@
 {
 	"name": "tree-model-ts",
-	"version": "1.0.6",
+	"version": "1.1.0",
 	"author": "Kristoffer Roen-Lie",
 	"license": "MIT",
-	"description": "An updated ESM & TS version of tree-model-js originally created by João Nuno Silva <jnss81@gmail.com> (http://jnuno.com).",
+	"description": "An updated ESM & TS version of tree-model.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.js",
 	"type": "module",
@@ -21,12 +21,15 @@
 		"README.md"
 	],
 	"scripts": {
-		"test": "uvu test \\.test\\.ts$ -r tsm",
-		"test:coverage": "c8 --include=src npm test",
-		"test:coverage:report": "npm run test:coverage && c8 report --reporter=text-lcov > coverage/lcov.info",
 		"dev": "tsup src/index.ts --dts --format cjs,esm --watch",
 		"build": "tsup src/index.ts --dts --format cjs,esm",
 		"prepublishOnly": "yarn build",
+		"lint": "eslint . --ext .ts",
+		"lint:fix": "eslint . --ext .ts --fix",
+		"lint:dry": "eslint . --ext .ts --fix-dry-run",
+		"test": "uvu test \\.test\\.ts$ -r tsm",
+		"test:coverage": "c8 --include=src npm test",
+		"test:coverage:report": "npm run test:coverage && c8 report --reporter=text-lcov > coverage/lcov.info",
 		"example1": "node --no-warnings --experimental-modules --loader tsm ./examples/findNodePath.ts"
 	},
 	"dependencies": {},

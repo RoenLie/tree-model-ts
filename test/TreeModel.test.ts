@@ -6,7 +6,7 @@ import { spy } from 'sinon';
 
 
 function idEq( id: string | number ) {
-	return function( node: Node<`id`, `children`> ) {
+	return function( node: Node<any> ) {
 		return node.model.id === id;
 	};
 }
@@ -285,11 +285,11 @@ defaultConfig_getPath.run();
 
 /* --------------------------------------------------- */
 
-function callback121( node: Node<`id`, `children`> ) {
+function callback121( node: Node ) {
 	if ( node.model.id === 121 )
 		return false;
 }
-function callback12( node: Node<`id`, `children`> ) {
+function callback12( node: Node ) {
 	if ( node.model.id === 12 )
 		return false;
 }
@@ -548,26 +548,26 @@ defaultConfig_hasChildren.before.each( ( context ) => {
 } );
 
 defaultConfig_hasChildren( 'should return true for node with children', ( { root } ) => {
-	assert.equal( root.hasChildren(), true );
+	assert.equal( root.hasChildren, true );
 } );
 
 defaultConfig_hasChildren( 'should return false for node without children', ( { root } ) => {
-	assert.equal( root.first( idEq( 111 ) ).hasChildren(), false );
+	assert.equal( root.first( idEq( 111 ) ).hasChildren, false );
 } );
 
 defaultConfig_hasChildren.run();
 
 /* --------------------------------------------------- */
 
-const customConfig_parse = suite( 'parse(), with custom configuration', { treeModel: new TreeModel() } );
+const customConfig_parse = suite( 'parse(), with custom configuration', {
+	treeModel:   new TreeModel(),
+	modelSortFn: ( a, b ) => Number( b.id ) - Number( a.id ),
+} );
 
 customConfig_parse.before.each( ( context ) => {
 	context.treeModel = new TreeModel( {
-		idPropertyName:       'id',
 		childrenPropertyName: 'deps',
-		modelComparatorFn:    function( a, b ) {
-			return Number( b.id ) - Number( a.id );
-		},
+		modelSortFn:          context.modelSortFn,
 	} );
 } );
 
@@ -676,15 +676,15 @@ customConfig_parse.run();
 
 /* --------------------------------------------------- */
 
-const customConfig_addChild = suite( 'addChild(), with custom configuration', { treeModel: new TreeModel() } );
+const customConfig_addChild = suite( 'addChild(), with custom configuration', {
+	treeModel:   new TreeModel(),
+	modelSortFn: ( a, b ) => Number( b.id ) - Number( a.id ),
+} );
 
 customConfig_addChild.before.each( ( context ) => {
 	context.treeModel = new TreeModel( {
-		idPropertyName:       'id',
 		childrenPropertyName: 'deps',
-		modelComparatorFn:    function( a, b ) {
-			return Number( b.id ) - Number( a.id );
-		},
+		modelSortFn:          context.modelSortFn,
 	} );
 } );
 
@@ -772,15 +772,15 @@ customConfig_addChild.run();
 
 /* --------------------------------------------------- */
 
-const customConfig_setIndex = suite( 'setIndex(), with custom configuration', { treeModel: new TreeModel() } );
+const customConfig_setIndex = suite( 'setIndex(), with custom configuration', {
+	treeModel:   new TreeModel(),
+	modelSortFn: ( a, b ) => Number( b.id ) - Number( a.id ),
+} );
 
 customConfig_setIndex.before.each( ( context ) => {
 	context.treeModel = new TreeModel( {
-		idPropertyName:       'id',
 		childrenPropertyName: 'deps',
-		modelComparatorFn:    function( a, b ) {
-			return Number( b.id ) - Number( a.id );
-		},
+		modelSortFn:          context.modelSortFn,
 	} );
 } );
 
@@ -801,21 +801,16 @@ customConfig_setIndex.run();
 
 /* --------------------------------------------------- */
 
-const customConfig_drop = suite(
-	'drop(), with custom configuration',
-	{
-		treeModel: new TreeModel(),
-		root:      new TreeModel().parse( { id: 1 } ),
-	},
-);
+const customConfig_drop = suite( 'drop(), with custom configuration', {
+	treeModel:   new TreeModel(),
+	root:        new TreeModel().parse( { id: 1 } ),
+	modelSortFn: ( a, b ) => Number( b.id ) - Number( a.id ),
+} );
 
 customConfig_drop.before.each( ( context ) => {
 	context.treeModel = new TreeModel( {
-		idPropertyName:       'id',
 		childrenPropertyName: 'deps',
-		modelComparatorFn:    function( a, b ) {
-			return Number( b.id ) - Number( a.id );
-		},
+		modelSortFn:          context.modelSortFn,
 	} );
 
 	context.root = context.treeModel.parse( {
@@ -847,17 +842,15 @@ customConfig_drop.run();
 /* --------------------------------------------------- */
 
 const customConfig_hasChildren = suite( 'hasChildren(), with custom configuration', {
-	treeModel: new TreeModel<`id`, `deps`>(),
-	root:      new TreeModel<`id`, `deps`>().parse( { id: 1, deps: [] } ),
+	treeModel:   new TreeModel(),
+	root:        new TreeModel().parse( { id: 1, deps: [] } ),
+	modelSortFn: ( a, b ) => Number( b.id ) - Number( a.id ),
 } );
 
 customConfig_hasChildren.before.each( ( context ) => {
-	context.treeModel = new TreeModel<`id`, `deps`>( {
-		idPropertyName:       'id',
+	context.treeModel = new TreeModel( {
 		childrenPropertyName: 'deps',
-		modelComparatorFn:    function( a, b ) {
-			return Number( b.id ) - Number( a.id );
-		},
+		modelSortFn:          context.modelSortFn,
 	} );
 
 	context.root = context.treeModel.parse( {
@@ -876,11 +869,11 @@ customConfig_hasChildren.before.each( ( context ) => {
 } );
 
 customConfig_hasChildren( 'should return true for node with children', ( { root } ) => {
-	assert.equal( root.hasChildren(), true );
+	assert.equal( root.hasChildren, true );
 } );
 
 customConfig_hasChildren( 'should return false for node without children', ( { root } ) => {
-	assert.equal( root.first( idEq( 111 ) ).hasChildren(), false );
+	assert.equal( root.first( idEq( 111 ) ).hasChildren, false );
 } );
 
 customConfig_hasChildren.run();

@@ -1,233 +1,236 @@
-# This documentation is just a copy of the original TreeModel and FlatToNested projects. <br> It *might* be updated to correctly reflect the exact usage of this package at a later date.
-
 # TreeModel
-
-Manipulate and traverse tree-like structures in javascript.
-
-For download and demos, please [visit TreeModel website](http://jnuno.com/tree-model-js).
-
-[![Build Status](https://travis-ci.org/joaonuno/tree-model-js.svg)](https://travis-ci.org/joaonuno/tree-model-js)
-[![Coverage Status](https://coveralls.io/repos/github/joaonuno/tree-model-js/badge.svg?branch=master)](https://coveralls.io/github/joaonuno/tree-model-js?branch=master)
-
-## Installation
-
-### Node
-
-TreeModel is available as an npm module so you can install it with `npm install tree-model` and use it in your script:
-
-```js
-var TreeModel = require('tree-model'),
-    tree = new TreeModel(),
-    root = tree.parse({name: 'a', children: [{name: 'b'}]});
+Manipulate and traverse tree-like structures in javascript.<br>
+This is an ESM and updated version of the original project named: tree-model made by **João Nuno Silva**
+## <br>API Reference
+### <hr><br>Creating a default TreeModel
+```ts
+const treeModel = new TreeModel();
 ```
+### <hr><br>Parse the hierarchy object
+Parse the given user defined model and return the root Node object.<br>
+The default model is for child nodes to be present under the `children` property.<br>
+If your hierarchy structure is different, see the next section on how to create a custom TreeModel.
+```ts
+const model = {
+	id: 1,
+	children: [ { id: 11 } ]
+}
 
-#### TypeScript
-Type definitions are already bundled with the package, which should just work with npm install.
-
-You can maually find the definition files in the `types` folder.
-
-### Browser
-
-[Visit TreeModel website](http://jnuno.com/tree-model-js) to download browser-ready bundles.
-
-## Questions?
-
-If you have any doubt using this library please post a question on [stackoverflow](http://stackoverflow.com/questions/ask?tags=treemodel) tagged with `treemodel`.
-
-## API Reference
-
-### Create a new TreeModel
-
-Create a new TreeModel with the given options.
-
-```js
-var tree = new TreeModel(options)
+const treeModel = new TreeModel();
+const root = treeModel.parse( model );
 ```
+### <hr><br> Create a custom TreeModel
+In order to get proper type completion when using a custom model you must first create either an interface or a type that represents the structure that you wish to have available whenever a node is presented.<br>
+You must also set the `childrenPropertyName` option in the class constructor so that the nodes know which property to search for internally.
+```ts
+interface Company {
+	code: string;
+	companies?: Company[];
+}
 
-Valid properties for the options object are:
+const companyHierarchy: Company = {
+	code: 1,
+	companies: [ { code: 11 } ]
+}
 
-* `childrenPropertyName` - The name for the children array property. Default is `children`;
-* `modelComparatorFn` - A comparator function to sort the children when parsing the model and adding children. The default order policy is to keep the parsed order and append new children. The comparator function receives the model for two nodes just like the [Array.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) function. The provided sort algorithm is **stable**.
-
-### Parse the hierarchy object
-
-Parse the given user defined model and return the root Node object.
-
-```js
-Node tree.parse(model)
+const companyTree = new TreeModel<Company>( { childrenPropertyName: 'companies' } );
+const root = companyTree.parse( companyHierarchy );
 ```
+### <hr><br> Sorting child nodes
+You may provide a custom sort function for how the child nodes will be inserted into the parent nodes.
+```ts
+interface DefaultModel = {
+	id: string;
+	children: DefaultModel[];
+}
 
-### Is Root?
+const model: DefaultModel = {
+	id: 1,
+	children: [ { id: 11 } ]
+}
 
+const modelSortFn = ( a: DefaultModel, b: DefaultModel ) =>
+	Number( b.id ) - Number( a.id );
+
+const tree = new TreeModel<DefaultModel>( {
+	childrenPropertyName: 'children',
+	modelSortFn
+} );
+const root = tree.parse(model);
+```
+### <hr><br>Is Root?
 Return `true` if this Node is the root, `false` otherwise.
 
-```js
-Boolean node.isRoot()
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+root.isRoot(); // boolean
 ```
-
-### Has Children?
-
+### <hr><br>Has Children?
 Return `true` if this Node has one or more children, `false` otherwise.
 
-```js
-Boolean node.hasChildren()
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+root.hasChildren(); // Node[]
 ```
-
-### Add a child
-
+### <hr><br>Add a child
 Add the given node as child of this one. Return the child Node.
 
-```js
-Node parentNode.addChild(childNode)
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+const newNode = new Node( { id: 2: children: [ { id: 22 } ] } );
+
+root.addChild(newNode); // Node
 ```
 
-### Add a child at a given index
-
+### <hr><br>Add a child at a given index
 Add the given node as child of this one at the given index. Return the child Node.
 
-```js
-Node parentNode.addChildAtIndex(childNode, index)
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+const index = 0;
+
+root.addChildAtIndex(childNode, index); // Node
 ```
-
-### Set the index of a node among its siblings
-
+### <hr><br>Set the index of a node among its siblings
 Sets the index of the node among its siblings to the given value. Return the node itself.
 
-```js
-Node node.setIndex(index)
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+const index = 0;
+
+const node = root.first( node => node.id == 11 );
+node.setIndex(index); // Node
 ```
-
-### Get the index of a node among its siblings
-
+### <hr><br>Get the index of a node among its siblings
 Gets the index of the node relative to its siblings. Return the index value.
 
-```js
-Int node.getIndex()
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+const node = root.first( node => node.id == 11 );
+node.getIndex(); // number
 ```
-
-### Get the node path
-
+### <hr><br>Get the node path
 Get the array of Nodes representing the path from the root to this Node (inclusive).
 
-```js
-Array<Node> node.getPath()
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+const node = root.first( node => node.id == 11 );
+node.getPath(); // Node[]
 ```
-
-### Delete a node from the tree
-
+### <hr><br>Delete a node from the tree
 Drop the subtree starting at this node. Returns the node itself, which is now a root node.
 
-```js
-Node node.drop()
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+const node = root.first( node => node.id == 11 );
+node.drop(); // Node
 ```
 
-*Warning* - Dropping a node while walking the tree is not supported. You must first collect the nodes to drop using one of the traversal functions and then drop them. Example:
+*Warning* - Dropping a node while walking the tree is not supported.<br>
+You must first collect the nodes to drop using one of the traversal functions and then drop them.<br>
 
-```js
-root.all( /* predicate */ ).forEach(function (node) {
-  node.drop();
-});
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+root.all( node => node.id ).forEach( node => {
+	node.drop();
+} )
 ```
-
-### Find a node
-
+### <hr><br>Find a node
 Starting from this node, find the first Node that matches the predicate and return it. The **predicate** is a function wich receives the visited Node and returns `true` if the Node should be picked and `false` otherwise.
 
-```js
-Node node.first(predicate)
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+root.first( node => node.id == 11 ); // Node
 ```
-
-### Find all nodes
-
+### <hr><br>Find all nodes
 Starting from this node, find all Nodes that match the predicate and return these.
 
-```js
-Array<Node> node.all(predicate)
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+root.all( node => node.id ); // Node[]
+```
+### <hr><br>Walk the tree
+Starting from this node, traverse the subtree calling the action for each visited node.<br>
+The action is a function which receives the visited Node as argument.<br>
+The traversal can be halted by returning `false` from the action.
+
+```ts
+const model = { id: 1, children: [ { id: 11 } ] };
+const tree = new TreeModel();
+const root = tree.parse(model);
+
+root.walk( node => console.log( node ), { strategy: 'post' });
 ```
 
-### Walk the tree
-
-Starting from this node, traverse the subtree calling the action for each visited node. The action is a function which receives the visited Node as argument. The traversal can be halted by returning `false` from the action.
-
-```js
-node.walk([options], action, [context])
-```
-
-**Note** - `first`, `all` and `walk` can optionally receive as first argument an object with traversal options. Currently the only supported option is the traversal `strategy` which can be any of the following:
-
-* `{strategy: 'pre'}` - Depth-first pre-order *[default]*;
-* `{strategy: 'post'}` - Depth-first post-order;
+**Note** - `first`, `all` and `walk` can all accept an option object that defines which traversal strategy to use.
+* `{strategy: 'pre'}` - Depth-first pre-order *[default]*.
+* `{strategy: 'post'}` - Depth-first post-order.
 * `{strategy: 'breadth'}` - Breadth-first.
 
-These functions can also take, as the last parameter, the *context* on which the action will be called.
 
-## Contributing
-
-### Setup
-
-Fork this repository and run `npm install` on the project root folder to make sure you have all project dependencies installed.
-
-### Code Linting
-
-Run `npm run lint`
-
-This will check both source and tests for code correctness and style compliance.
-
-### Running Tests
-
-Run `npm test`
-
-### Type definitions
-
-To modify the type definitions, look inside the `types` folder.
-`index.d.ts` contains the definition and `tree-model-tests.ts` contains type tests.
-
-To verify changes:
-
-Run `npm run dtslint`.
-
-<br>
-<hr>
-<br>
-
-flat-to-nested
-==============
+# <hr><br>FlatToNested
+Manipulate and traverse tree-like structures in javascript.
 
 Convert a hierarchy from flat to nested representation.
-
-[![Build Status](https://travis-ci.org/joaonuno/flat-to-nested-js.svg)](https://travis-ci.org/joaonuno/flat-to-nested-js)
-
 ## Example
 
-```js
-var FlatToNested, flatToNested, flat;
+```ts
+const flatToNested = new FlatToNested( /* can take a config object to use other property names */ );
 
-FlatToNested = require('flat-to-nested');
-flatToNested = new FlatToNested( /* can take a config object to use other property names */ );
-
-flat = [
-	{id: 111, parent: 11},
-	{id: 11, parent: 1},
-	{id: 12, parent: 1},
-	{id: 1}
+const flat = [
+	{ id: 1 }
+	{ parent: 1,  id: 11  },
+	{ parent: 11, id: 111 },
+	{ parent: 1,  id: 12  },
+	{ parent: 12, id: 121 },
 ];
 
-var nested = flatToNested.convert(flat);
-console.log(nested);
+const nested = flatToNested.convert( flat );
+console.log( nested );
 
 //	{
 //		id: 1,
 //		children: [
 //			{
 //				id: 11,
-//				children: [
-//					{
-//						id: 111
-//					}
-//				]
+//				children: [ { id: 111 } ]
 //			},
 //			{
-//				id: 12
+//				id: 12,
+//				children: [ { id: 121 } ]
 //			}
 //		]
 //	}
@@ -238,29 +241,25 @@ console.log(nested);
 The constructor accepts an optional object with some or all of these properties:
 
 ```js
-flatToNested = new FlatToNested({
-	// The name of the property with the node id in the flat representation
+flatToNested = new FlatToNested( {
+	// The name of the property with the node id in the flat representation.
 	id: 'id',
-	// The name of the property with the parent node id in the flat representation
+	// The name of the property with the parent node id in the flat representation.
 	parent: 'parent',
-	// The name of the property that will hold the children nodes in the nested representation
-	children: 'children'
-}});
-
+	// The name of the property that will hold the children nodes in the nested representation.
+	children: 'children',
+	// Deletes the parent wrapper.
+	options: { deleteParent: true }
+} );
 ```
 
-## Contributing
+## <hr><br>Contributing
 
 ### Setup
-
-Fork this repository and run `npm install` on the project root folder to make sure you have all project dependencies installed.
+`yarn install`
 
 ### Code Linting
-
-Run `npm run lint`
-
-This will check both source and tests for code correctness and style compliance.
+`yarn lint`
 
 ### Running Tests
-
-Run `npm test`
+`yarn test`

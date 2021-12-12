@@ -1,70 +1,33 @@
-import { findInsertIndex } from './find-insert-index';
 import { Node } from './Node';
 import { walkStrategies } from './strategies';
 
 
-export function addChildToNode<I extends string, C extends string>(
-	node: Node<I, C>, child: Node<I, C>,
-) {
-	child.parent = node;
-	node.children.push( child );
-
-	return child;
-}
-
-export function hasComparatorFunction<I extends string, C extends string>( node: Node<I, C> ) {
-	return toString.call( node.config.modelComparatorFn ) == '[object Function]';
-}
-
-export function addChild<I extends string, C extends string>(
-	self: Node<I, C>, child: Node<I, C>, insertIndex?: number,
-): Node<I, C> {
-	let index;
-
-	if ( !( child instanceof Node ) )
-		throw new TypeError( 'Child must be of type Node.' );
+export const hasSortFunction = ( node: Node ) => {
+	return toString.call( node.config.modelSortFn ) == '[object Function]';
+};
 
 
-	child.parent = self;
-	if ( !( toString.call( self.model[ self.config.childrenPropertyName ] ) == '[object Array]' ) )
-		( self.model as any )[ self.config.childrenPropertyName ] = [];
+/**
+ * Find the index to insert an element in array without changing the sort order.
+ */
+export const findInsertIndex = (
+	comparatorFn: ( item: any, el: any ) => number,
+	arr: any[],
+	el: any,
+) => {
+	let i, len;
+	for ( i = 0, len = arr.length; i < len; i++ )
+		if ( comparatorFn( arr[ i ], el ) > 0 )
+			break;
 
-
-	if ( hasComparatorFunction( self ) ) {
-		// Find the index to insert the child
-		index = findInsertIndex(
-			self.config.modelComparatorFn!,
-			self.model[ self.config.childrenPropertyName ],
-			child.model,
-		);
-
-		// Add to the model children
-		self.model[ self.config.childrenPropertyName ].splice( index, 0, child.model );
-
-		// Add to the node children
-		self.children.splice( index, 0, child );
-	}
-	else
-	if ( insertIndex === undefined ) {
-		self.model[ self.config.childrenPropertyName ].push( child.model );
-		self.children.push( child );
-	}
-	else {
-		if ( insertIndex < 0 || insertIndex > self.children.length )
-			throw new Error( 'Invalid index.' );
-
-		self.model[ self.config.childrenPropertyName ].splice( insertIndex, 0, child.model );
-		self.children.splice( insertIndex, 0, child );
-	}
-
-	return child;
-}
+	return i;
+};
 
 
 export type NodeOptions = { strategy: 'pre' | 'post' | 'breadth'; };
-export type Fn<I extends string, C extends string> = ( node: Node<I, C> ) => boolean;
-export type NullableFn<I extends string, C extends string> = ( ( node: Node<I, C> ) => boolean ) | null;
-export function parseOptions( _options?: NodeOptions ) {
+export type Fn<TModel extends {[key: string]: any}> = ( node: Node<TModel> ) => boolean;
+export type NullableFn<TModel extends {[key: string]: any}> = ( ( node: Node<TModel> ) => boolean ) | null;
+export const parseOptions = ( _options?: NodeOptions ) => {
 	const defaultOptions: NodeOptions = { strategy: 'pre' };
 
 	const options = {
@@ -76,4 +39,4 @@ export function parseOptions( _options?: NodeOptions ) {
 		throw new Error( 'Unknown tree walk strategy. Valid strategies are \'pre\' [default], \'post\' and \'breadth\'.' );
 
 	return options;
-}
+};

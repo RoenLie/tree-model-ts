@@ -15,14 +15,30 @@ function multiInitPush( arrayName: string, obj: Record<string, any>, toPushArray
 }
 
 
-export class FlatToNested {
+type Config = {
+	id?: string;
+	parent?: string;
+	children?: string;
+	options?: {
+		deleteParent: boolean;
+	};
+}
+type DefaultModel = {id: string; children: DefaultModel[]};
 
-	constructor( public config: any = {} ) {
-		this.config = config = config || {};
-		this.config.id = config.id || 'id';
-		this.config.parent = config.parent || 'parent';
-		this.config.children = config.children || 'children';
-		this.config.options = config.options || { deleteParent: true };
+
+export class FlatToNested<TModel extends {[key: string]: any} = DefaultModel> {
+
+	private config: Required<Config>;
+
+	constructor( config: Config = {} ) {
+		const defaultConfig = {
+			id:       'id',
+			parent:   'parent',
+			children: 'children',
+			options:  { deleteParent: true },
+		};
+
+		this.config = { ...defaultConfig, ...config };
 	}
 
 	public convert( flat: any[] ) {
@@ -63,7 +79,7 @@ export class FlatToNested {
 				: {};
 
 
-		return nested;
+		return nested as TModel;
 	}
 
 }

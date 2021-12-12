@@ -1,46 +1,46 @@
-import { mergeSort } from './merge-sort';
 import { Node } from './Node';
-import { addChildToNode } from './helpers';
 
 
-export type Config<I extends string, C extends string> = {
-	idPropertyName?: string;
+export type Config<TModel> = {
 	childrenPropertyName: string;
-	modelComparatorFn?: ( a: Model<I, C>, b: Model<I, C> ) => number;
+	modelSortFn?: ( a: Model<TModel>, b: Model<TModel> ) => number;
 }
+export type Model<T> = {[P in keyof T]: T[P]} & {[key: string]: any};
+export type DefaultModel = {id: string | number; children?: DefaultModel[]};
 
 
-type ModelId<T extends string> = {
-	[P in [T][number]]: string | number;
-}
-type ModelChildren<I extends string, T extends string> = {
-	[P in [T][number]]: Model<I, T>[];
-}
-export type Model<I extends string = `id`, C extends string = `children`> =
-	ModelId<I> & Partial<ModelChildren<I, C>> & { [key: string]: any };
+export class TreeModel<TModel extends Model<any> = DefaultModel> {
 
+	constructor( public config: Config<TModel> = { childrenPropertyName: 'children' } ) {
+		config?.childrenPropertyName ?? ( config.childrenPropertyName = 'children' );
+	}
 
-export class TreeModel<I extends string = `id`, C extends string = `children`> {
+	public parse( model: Model<TModel> ) {
+		const { childrenPropertyName } = this.config;
 
-	constructor( public config: Config<I, C> = { childrenPropertyName: 'children' } ) {}
-
-	public parse( model: Model<I, C> ) {
 		if ( !( toString.call( model ) == '[object Object]' ) )
 			throw new TypeError( 'Model must be of type object.' );
 
-		const node = new Node( this.config, model );
-		if ( !Array.isArray( model[ this.config.childrenPropertyName ] ) )
+		const node = new Node<TModel>( model, this.config );
+		if ( !Array.isArray( model[ childrenPropertyName ] ) )
 			return node;
 
-		this.config.modelComparatorFn &&
-			( ( model as any )[ this.config.childrenPropertyName] = mergeSort(
-				this.config.modelComparatorFn, model[ this.config.childrenPropertyName ],
-			) );
+		if ( this.config.modelSortFn )
+			( model as any )[ childrenPropertyName] = model[ childrenPropertyName ]
+				.sort( this.config.modelSortFn );
 
-		for ( let i = 0, childCount = model[ this.config.childrenPropertyName ].length; i < childCount; i++ )
-			addChildToNode( node, this.parse( model[ this.config.childrenPropertyName ][ i ] ) );
+		for ( let i = 0, childCount = model[ childrenPropertyName ].length; i < childCount; i++ )
+			this.addChildToNode( node, this.parse( model[ childrenPropertyName ][ i ] ) );
 
 		return node;
 	}
+
+	private addChildToNode = ( node: Node, child: Node ) => {
+		child.parent = node;
+		node.children.push( child );
+
+		return child;
+	};
+
 
 }

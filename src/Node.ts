@@ -1,69 +1,119 @@
 import {
 	NullableFn, parseOptions,
-	addChild, hasComparatorFunction, NodeOptions,
+	hasSortFunction, NodeOptions, findInsertIndex,
 } from './helpers';
 import { walkStrategies } from './strategies';
 import { Config, Model } from './TreeModel';
 
 
-export class Node<I extends string = `id`, C extends string = `children`> {
+export class Node<TModel extends Model<any> = Model<any>> {
 
-	public parent: Node<I, C> | undefined = undefined;
-	public children: any[] = [];
-	constructor( public config: Config<I, C>, public model: Model<I, C> ) {}
+	public parent: Node<TModel> | undefined = undefined;
+	public children: Node<Model<TModel>>[] = [];
+	constructor(
+		public model: Model<TModel>,
+		public config: Config<TModel> = { childrenPropertyName: 'children' },
+	) {}
 
-	public isRoot() {
+	public get isRoot() {
 		return this.parent === undefined;
 	}
 
-	public hasChildren() {
+	public get hasChildren() {
 		return this.children.length > 0;
 	}
 
-	public addChild( child: Node<I, C> ) {
-		return addChild( this, child );
+	public addChild( child: Node<TModel>, insertIndex?: number ) {
+		if ( !( child instanceof Node ) )
+			throw new TypeError( 'Child must be of type Node.' );
+
+		const { childrenPropertyName, modelSortFn } = this.config;
+
+		if ( !( toString.call( this.model[ childrenPropertyName ] ) == '[object Array]' ) )
+			( this as Node<Model<any>> ).model[ childrenPropertyName ] = [];
+
+		child.parent = this;
+
+		if ( !hasSortFunction( this ) ) {
+			if ( insertIndex === undefined ) {
+				this.model[ childrenPropertyName ].push( child.model );
+				this.children.push( child );
+			}
+			else {
+				if ( insertIndex < 0 || insertIndex > this.children.length )
+					throw new Error( 'Invalid index.' );
+
+				this.model[ childrenPropertyName ].splice( insertIndex, 0, child.model );
+				this.children.splice( insertIndex, 0, child );
+			}
+
+			return child;
+		}
+
+		// Find the index to insert the child
+		const index = findInsertIndex(
+			modelSortFn!,
+			this.model[ childrenPropertyName ],
+			child.model,
+		);
+
+		// Add to the model children
+		this.model[ childrenPropertyName ].splice( index, 0, child.model );
+
+		// Add to the node children
+		this.children.splice( index, 0, child );
+
+		return child;
 	}
 
-	public addChildAtIndex( child: Node<I, C>, index: number ) {
-		if ( hasComparatorFunction( this ) )
+	public addChildAtIndex( child: Node<TModel>, index: number ) {
+		if ( hasSortFunction( this ) )
 			throw new Error( 'Cannot add child at index when using a comparator function.' );
 
-		return addChild( this, child, index );
+		return this.addChild( child, index );
+	}
+
+	public getIndex() {
+		if ( !this.parent )
+			return 0;
+
+		return this.parent?.children.indexOf( this );
 	}
 
 	public setIndex( index: number ) {
-		if ( hasComparatorFunction( this ) )
+		if ( hasSortFunction( this ) )
 			throw new Error( 'Cannot set node index when using a comparator function.' );
 
-		if ( this.isRoot() ) {
+		if ( !this.parent ) {
 			if ( index === 0 )
 				return this;
 
 			throw new Error( 'Invalid index.' );
 		}
 
-		if ( index < 0 || index >= this.parent!.children.length )
+		const { childrenPropertyName } = this.parent.config;
+		const { children, model } = this.parent;
+
+		if ( index < 0 || index >= children.length )
 			throw new Error( 'Invalid index.' );
 
-		const oldIndex = this.parent!.children.indexOf( this );
-
-		this.parent?.children.splice( index, 0, this.parent!.children.splice( oldIndex, 1 )[ 0 ] );
-
-		this.parent?.model[ this.parent.config.childrenPropertyName ]
-			.splice( index, 0, this.parent!.model[ this.parent!.config.childrenPropertyName ].splice( oldIndex, 1 )[ 0 ] );
+		const oldIndex = children.indexOf( this );
+		children.splice( index, 0, children.splice( oldIndex, 1 )[ 0 ] );
+		model[ childrenPropertyName ]
+			.splice( index, 0, model[ childrenPropertyName ].splice( oldIndex, 1 )[ 0 ] );
 
 		return this;
 	}
 
 	public getPath() {
-		const path: Node<I, C>[] = [];
+		const path: Node<TModel>[] = [];
 
-		const addToPath = ( node: Node<I, C> | undefined ) => {
+		const addToPath = ( node: Node<TModel> | undefined ) => {
 			if ( !node )
-				throw new Error( 'Attempting to add invalid node to path' );
+				return;
 
 			path.unshift( node );
-			if ( !node.isRoot() )
+			if ( node.parent )
 				addToPath( node.parent );
 		};
 		addToPath( this );
@@ -71,26 +121,19 @@ export class Node<I extends string = `id`, C extends string = `children`> {
 		return path;
 	}
 
-	public getIndex() {
-		if ( this.isRoot() )
-			return 0;
-
-		return this.parent?.children.indexOf( this );
-	}
-
-	public walk( fn: NullableFn<I, C> = () => true, _options?: NodeOptions ) {
+	public walk( fn: NullableFn<TModel> = () => true, _options?: NodeOptions ) {
 		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
-		walkStrategies[ options.strategy ]( this, fn! );
+		walkStrategies[ options.strategy ]( this, fn );
 	}
 
-	public all( fn: NullableFn<I, C> = () => true, _options?: NodeOptions ) {
-		const all: Node<I, C>[] = [];
+	public all( fn: NullableFn<TModel> = () => true, _options?: NodeOptions ) {
+		const all: Node<TModel>[] = [];
 		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
-		walkStrategies[ options.strategy ]( this, ( node: Node<I, C> ) => {
+		walkStrategies[ options.strategy ]( this, ( node: Node<TModel> ) => {
 			if ( fn?.( node ) )
 				all.push( node );
 
@@ -100,13 +143,13 @@ export class Node<I extends string = `id`, C extends string = `children`> {
 		return all;
 	}
 
-	public first( fn: NullableFn<I, C> = () => true, _options?: NodeOptions ) {
-		let first: Node<I, C> | undefined = undefined;
+	public first( fn: NullableFn<TModel> = () => true, _options?: NodeOptions ) {
+		let first: Node<TModel> | undefined = undefined;
 
 		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
-		walkStrategies[ options.strategy ]( this, ( node: Node<I, C> ) => {
+		walkStrategies[ options.strategy ]( this, ( node: Node<TModel> ) => {
 			if ( fn?.( node ) ) {
 				first = node;
 
@@ -116,16 +159,18 @@ export class Node<I extends string = `id`, C extends string = `children`> {
 			return true;
 		} );
 
-		return first as Node<I, C> | undefined;
+		return first as Node<TModel> | undefined;
 	}
 
 	public drop() {
-		if ( this.isRoot() )
+		if ( !this.parent )
 			return this;
 
-		const indexOfChild = this?.parent?.children.indexOf( this ) || 0;
-		this?.parent?.children.splice( indexOfChild, 1 );
-		this?.parent?.model[ this.config.childrenPropertyName ].splice( indexOfChild, 1 );
+		const { children, model } = this.parent;
+
+		const indexOfChild = children.indexOf( this ) || 0;
+		children.splice( indexOfChild, 1 );
+		model[ this.config.childrenPropertyName ].splice( indexOfChild, 1 );
 		this.parent = undefined;
 		delete this.parent;
 
