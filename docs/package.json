@@ -1,0 +1,30 @@
+{
+	"name": "tree-model-ts-docs",
+	"version": "0.0.1",
+	"description": "Documentation website for tree-model-ts",
+	"main": "index.ts",
+	"scripts": {
+		"dev": "vite",
+		"test": "test",
+		"preview": "vite preview",
+		"build": "vite build",
+		"prepublishOnly": "yarn build",
+		"clean": "rimraf dist node_modules"
+	},
+	"keywords": [
+		"tree-model-ts"
+	],
+	"author": "Kristoffer Roen-Lie",
+	"license": "MIT",
+	"dependencies": {
+		"lit": "^2.0.2",
+		"tslib": "^2.3.1"
+	},
+	"devDependencies": {
+		"typescript": "^4.5.3",
+		"vite": "^2.7.1",
+		"eslint": "^8.4.1",
+		"@typescript-eslint/eslint-plugin": "^5.6.0",
+		"@typescript-eslint/parser": "^5.6.0"
+	}
+}

@@ -32,7 +32,9 @@
 		"test:coverage:report": "npm run test:coverage && c8 report --reporter=text-lcov > coverage/lcov.info",
 		"example1": "node --no-warnings --experimental-modules --loader tsm ./examples/findNodePath.ts"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"tslib": "^2.3.1"
+	},
 	"devDependencies": {
 		"@types/node": "^16.11.12",
 		"@typescript-eslint/eslint-plugin": "^5.5.0",
@@ -41,7 +43,6 @@
 		"chai": "^4.3.4",
 		"eslint": "^8.4.0",
 		"sinon": "^12.0.1",
-		"tslib": "^2.3.1",
 		"tsm": "^2.2.1",
 		"tsup": "^5.10.1",
 		"typescript": "^4.5.2",
