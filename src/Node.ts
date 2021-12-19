@@ -108,15 +108,15 @@ export class Node<TModel extends Model<any> = Model<any>> {
 	public getPath() {
 		const path: Node<TModel>[] = [];
 
-		const addToPath = ( node: Node<TModel> | undefined ) => {
-			if ( !node )
-				return;
+		( {
+			addToPath( node: Node<TModel> | undefined ) {
+				if ( !node )
+					return;
 
-			path.unshift( node );
-			if ( node.parent )
-				addToPath( node.parent );
-		};
-		addToPath( this );
+				path.unshift( node );
+				node.parent && this.addToPath( node.parent );
+			},
+		} ).addToPath( this );
 
 		return path;
 	}
@@ -133,7 +133,7 @@ export class Node<TModel extends Model<any> = Model<any>> {
 		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
-		walkStrategies[ options.strategy ]( this, ( node: Node<TModel> ) => {
+		walkStrategies[ options.strategy ]( this, ( node ) => {
 			if ( fn?.( node ) )
 				all.push( node );
 
@@ -149,7 +149,7 @@ export class Node<TModel extends Model<any> = Model<any>> {
 		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
-		walkStrategies[ options.strategy ]( this, ( node: Node<TModel> ) => {
+		walkStrategies[ options.strategy ]( this, ( node ) => {
 			if ( fn?.( node ) ) {
 				first = node;
 
