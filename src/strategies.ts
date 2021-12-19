@@ -2,8 +2,8 @@ import type { Fn } from './helpers';
 import { Node } from './Node';
 
 
-const depthFirstPreOrder = <I extends string, C extends string>(
-	node: Node<I, C>, callback: Fn<I, C>,
+const depthFirstPreOrder = (
+	node: Node, callback: Fn,
 ): boolean => {
 	let keepGoing = callback( node );
 	for ( let i = 0, childCount = node.children.length; i < childCount; i++ ) {
@@ -16,8 +16,8 @@ const depthFirstPreOrder = <I extends string, C extends string>(
 	return keepGoing;
 };
 
-const depthFirstPostOrder = <I extends string, C extends string>(
-	node: Node<I, C>, callback: Fn<I, C>,
+const depthFirstPostOrder = (
+	node: Node, callback: Fn,
 ): boolean => {
 	let keepGoing;
 
@@ -32,8 +32,8 @@ const depthFirstPostOrder = <I extends string, C extends string>(
 	return keepGoing;
 };
 
-const breadthFirst = <I extends string, C extends string>(
-	node: Node<I, C>, callback: Fn<I, C>,
+const breadthFirst = (
+	node: Node, callback: Fn,
 ): void => {
 	const queue = [ node ];
 

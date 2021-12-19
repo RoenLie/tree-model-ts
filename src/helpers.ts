@@ -1,5 +1,6 @@
 import { Node } from './Node';
 import { walkStrategies } from './strategies';
+import { Model } from './TreeModel';
 
 
 export const hasSortFunction = ( node: Node ) => {
@@ -25,7 +26,7 @@ export const findInsertIndex = (
 
 
 export type NodeOptions = { strategy: 'pre' | 'post' | 'breadth'; };
-export type Fn<TModel extends {[key: string]: any}> = ( node: Node<TModel> ) => boolean;
+export type Fn<TModel extends {[key: string]: any} = Model<any>> = ( node: Node<TModel> ) => boolean;
 export type NullableFn<TModel extends {[key: string]: any}> = ( ( node: Node<TModel> ) => boolean ) | null;
 export const parseOptions = ( _options?: NodeOptions ) => {
 	const defaultOptions: NodeOptions = { strategy: 'pre' };
