@@ -10,6 +10,7 @@ export class Node<T extends Record<string, any> = Model> {
 
 	public parent: Node<T> | undefined = undefined;
 	public children: Node<T>[] = [];
+
 	constructor(
 		public model: Model<T>,
 		public config: ModelConfig<T> = { childKey: 'children' },
@@ -121,6 +122,13 @@ export class Node<T extends Record<string, any> = Model> {
 		return path;
 	}
 
+	/**
+	 * Traverses through all the nodes in the tree with the given strategy.
+	 *
+	 * Return false to exit.
+	 *
+	 * .
+	 */
 	public walk( fn: NullableFn<T> = () => true, _options?: NodeOptions ) {
 		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
@@ -128,6 +136,11 @@ export class Node<T extends Record<string, any> = Model> {
 		walkStrategies[ options.strategy ]( this, fn );
 	}
 
+	/**
+	 * Traverses through all the nodes in the tree with the given strategy.
+	 *
+	 * .
+	 */
 	public all( fn: NullableFn<T> = () => true, _options?: NodeOptions ) {
 		const all: Node<T>[] = [];
 		const options: NodeOptions = parseOptions( _options );
@@ -136,13 +149,18 @@ export class Node<T extends Record<string, any> = Model> {
 		walkStrategies[ options.strategy ]( this, ( node ) => {
 			if ( fn?.( node ) )
 				all.push( node );
-
-			return true;
 		} );
 
 		return all;
 	}
 
+	/**
+	 * Traverses through all the nodes in the tree with the given strategy.
+	 *
+	 * Returns the first node where function returns a truthy value.
+	 *
+	 * .
+	 */
 	public first( fn: NullableFn<T> = () => true, _options?: NodeOptions ) {
 		let first: Node<T> | undefined = undefined;
 
@@ -155,8 +173,6 @@ export class Node<T extends Record<string, any> = Model> {
 
 				return false;
 			}
-
-			return true;
 		} );
 
 		return first as Node<T> | undefined;

@@ -4,7 +4,7 @@ import { Node } from './Node';
 
 const depthFirstPreOrder = (
 	node: Node, callback: Fn,
-): boolean => {
+): void | boolean => {
 	let keepGoing = callback( node );
 	for ( let i = 0, childCount = node.children.length; i < childCount; i++ ) {
 		if ( keepGoing === false )
@@ -18,7 +18,7 @@ const depthFirstPreOrder = (
 
 const depthFirstPostOrder = (
 	node: Node, callback: Fn,
-): boolean => {
+): void | boolean => {
 	let keepGoing;
 
 	for ( let i = 0, childCount = node.children.length; i < childCount; i++ ) {

@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"importHelpers": true,
-		"removeComments": true,
+		"removeComments": false, // this also removes jsdocs
 		"baseUrl": ".",
 		"rootDir": ".",
 		"outDir": "./types",
