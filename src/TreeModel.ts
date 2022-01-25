@@ -1,46 +1,47 @@
 import { Node } from './Node';
 
 
-export type Config<TModel> = {
-	childrenPropertyName: string;
-	modelSortFn?: ( a: Model<TModel>, b: Model<TModel> ) => number;
+export type ModelConfig<T> = {
+	childKey: string;
+	modelSortFn?: ( a: Model<T>, b: Model<T> ) => number;
 }
-export type Model<T> = {[P in keyof T]: T[P]} & {[key: string]: any};
-export type DefaultModel = {id: string | number; children?: DefaultModel[]};
+export type Model<T = any> = Record<string, any> & T;
 
 
-export class TreeModel<TModel extends Model<any> = DefaultModel> {
+export class TreeModel {
 
-	constructor( public config: Config<TModel> = { childrenPropertyName: 'children' } ) {
-		config?.childrenPropertyName ?? ( config.childrenPropertyName = 'children' );
-	}
-
-	public parse( model: Model<TModel> ) {
-		const { childrenPropertyName } = this.config;
+	public static parse<T extends Record<string, any>>( model: Model<T>, config: ModelConfig<T> = { childKey: 'children' } ) {
+		const { childKey } = config;
 
 		if ( !( toString.call( model ) == '[object Object]' ) )
 			throw new TypeError( 'Model must be of type object.' );
 
-		const node = new Node<TModel>( model, this.config );
-		if ( !Array.isArray( model[ childrenPropertyName ] ) )
+		const node = new Node<T>( model, config );
+		if ( !Array.isArray( model[ childKey ] ) )
 			return node;
 
-		if ( this.config.modelSortFn )
-			( model as any )[ childrenPropertyName] = model[ childrenPropertyName ]
-				.sort( this.config.modelSortFn );
+		if ( config.modelSortFn )
+			( model as any )[ childKey] = model[ childKey ]
+				.sort( config.modelSortFn );
 
-		for ( let i = 0, childCount = model[ childrenPropertyName ].length; i < childCount; i++ )
-			this.addChildToNode( node, this.parse( model[ childrenPropertyName ][ i ] ) );
+		for ( let i = 0, childCount = model[ childKey ].length; i < childCount; i++ )
+			TreeModel.addChildToNode( node, TreeModel.parse( model[ childKey ][ i ], config ) );
 
 		return node;
 	}
 
-	private addChildToNode = ( node: Node, child: Node ) => {
+	public static parseArray<T extends Record<string, any>>( model: Model<T>[], config: ModelConfig<T> = { childKey: 'children' } ) {
+		const node = TreeModel.parse<T>( { [config.childKey]: model } as any );
+
+		return node;
+	}
+
+
+	private static addChildToNode = ( node: Node, child: Node ) => {
 		child.parent = node;
 		node.children.push( child );
 
 		return child;
 	};
-
 
 }

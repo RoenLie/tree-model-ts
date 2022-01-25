@@ -21,8 +21,8 @@ const companiesFlat = [
 ];
 
 
-const companies = new FlatToNested<Company>( { children: 'companies' } ).convert( companiesFlat );
-const root = new TreeModel<Company>( { childrenPropertyName: 'companies' } ).parse( companies );
+const companies = FlatToNested.convert<Company>( companiesFlat, { childKey: 'companies' } );
+const root = TreeModel.parse( companies, { childKey: 'companies' } );
 const deepChild = root.first( ( node ) => !!( node.model.id == '1_3_1_1_1' ) );
 
 deepChild?.getPath().forEach( node => {

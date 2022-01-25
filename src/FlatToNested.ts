@@ -15,41 +15,39 @@ function multiInitPush( arrayName: string, obj: Record<string, any>, toPushArray
 }
 
 
-type Config = {
-	id?: string;
-	parent?: string;
-	children?: string;
+type ConvertConfig = {
+	idKey?: string;
+	parentKey?: string;
+	childKey?: string;
 	options?: {
 		deleteParent: boolean;
 	};
 }
-type DefaultModel = {id: string; children: DefaultModel[]};
 
+export class FlatToNested {
 
-export class FlatToNested<TModel extends {[key: string]: any} = DefaultModel> {
-
-	private config: Required<Config>;
-
-	constructor( config: Config = {} ) {
-		const defaultConfig = {
-			id:       'id',
-			parent:   'parent',
-			children: 'children',
-			options:  { deleteParent: true },
+	private static setConfig( config: ConvertConfig ) {
+		const defaultConfig: Required<ConvertConfig> = {
+			idKey:     'id',
+			parentKey: 'parent',
+			childKey:  'children',
+			options:   { deleteParent: true },
 		};
 
-		this.config = { ...defaultConfig, ...config };
+		return { ...defaultConfig, ...config };
 	}
 
-	public convert( flat: any[] ) {
-		const roots: any[] = [];
-		const temp: any = {};
-		const pendingChildOf: any = {};
+	public static convert<T extends Record<string, any>>( flat: any[], _config: ConvertConfig = {} ) {
+		const config = this.setConfig( _config );
+
+		const roots: T[] = [];
+		const temp: Record<string, any> = {};
+		const pendingChildOf: Record<string, any> = {};
 
 		for ( let i = 0, len = flat.length; i < len; i++ ) {
 			const flatEl = flat[i];
-			const id = flatEl[this.config.id];
-			const parent = flatEl[this.config.parent];
+			const id = flatEl[config.idKey];
+			const parent = flatEl[config.parentKey];
 
 			temp[id] = flatEl;
 
@@ -59,27 +57,27 @@ export class FlatToNested<TModel extends {[key: string]: any} = DefaultModel> {
 			else {
 				if ( temp[parent] !== undefined )
 				// Parent is already in temp, adding the current object to its children array.
-					initPush( this.config.children, temp[parent], flatEl );
+					initPush( config.childKey, temp[parent], flatEl );
 				else
 				// Parent for this object is not yet in temp, adding it to pendingChildOf.
 					initPush( parent, pendingChildOf, flatEl );
 
-				if ( this.config.options.deleteParent )
-					delete flatEl[this.config.parent];
+				if ( config.options.deleteParent )
+					delete flatEl[config.parentKey];
 			}
 
 			if ( pendingChildOf[id] !== undefined )
 			// Current object has children pending for it. Adding these to the object.
-				multiInitPush( this.config.children, flatEl, pendingChildOf[id] );
+				multiInitPush( config.childKey, flatEl, pendingChildOf[id] );
 		}
 
 		const nested: Record<string, any> =
-		roots.length === 1 ? roots[0]
-			: roots.length > 1 ? { [this.config.children]: roots }
-				: {};
+			roots.length === 1 ? roots[0]
+				: roots.length > 1 ? { [config.childKey]: roots }
+					: {};
 
 
-		return nested as TModel;
+		return nested as T;
 	}
 
 }

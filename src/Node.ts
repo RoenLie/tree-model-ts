@@ -3,16 +3,16 @@ import {
 	hasSortFunction, NodeOptions, findInsertIndex,
 } from './helpers';
 import { walkStrategies } from './strategies';
-import { Config, Model } from './TreeModel';
+import { ModelConfig, Model } from './TreeModel';
 
 
-export class Node<TModel extends Model<any> = Model<any>> {
+export class Node<T extends Record<string, any> = Model> {
 
-	public parent: Node<TModel> | undefined = undefined;
-	public children: Node<Model<TModel>>[] = [];
+	public parent: Node<T> | undefined = undefined;
+	public children: Node<T>[] = [];
 	constructor(
-		public model: Model<TModel>,
-		public config: Config<TModel> = { childrenPropertyName: 'children' },
+		public model: Model<T>,
+		public config: ModelConfig<T> = { childKey: 'children' },
 	) {}
 
 	public get isRoot() {
@@ -23,14 +23,14 @@ export class Node<TModel extends Model<any> = Model<any>> {
 		return this.children.length > 0;
 	}
 
-	public addChild( child: Node<TModel>, insertIndex?: number ) {
+	public addChild( child: Node<T>, insertIndex?: number ) {
 		if ( !( child instanceof Node ) )
 			throw new TypeError( 'Child must be of type Node.' );
 
-		const { childrenPropertyName, modelSortFn } = this.config;
+		const { childKey: childrenPropertyName, modelSortFn } = this.config;
 
 		if ( !( toString.call( this.model[ childrenPropertyName ] ) == '[object Array]' ) )
-			( this as Node<Model<any>> ).model[ childrenPropertyName ] = [];
+			( this as Node<any> ).model[ childrenPropertyName ] = [];
 
 		child.parent = this;
 
@@ -66,7 +66,7 @@ export class Node<TModel extends Model<any> = Model<any>> {
 		return child;
 	}
 
-	public addChildAtIndex( child: Node<TModel>, index: number ) {
+	public addChildAtIndex( child: Node<T>, index: number ) {
 		if ( hasSortFunction( this ) )
 			throw new Error( 'Cannot add child at index when using a comparator function.' );
 
@@ -91,7 +91,7 @@ export class Node<TModel extends Model<any> = Model<any>> {
 			throw new Error( 'Invalid index.' );
 		}
 
-		const { childrenPropertyName } = this.parent.config;
+		const { childKey: childrenPropertyName } = this.parent.config;
 		const { children, model } = this.parent;
 
 		if ( index < 0 || index >= children.length )
@@ -106,10 +106,10 @@ export class Node<TModel extends Model<any> = Model<any>> {
 	}
 
 	public getPath() {
-		const path: Node<TModel>[] = [];
+		const path: Node<T>[] = [];
 
 		( {
-			addToPath( node: Node<TModel> | undefined ) {
+			addToPath( node: Node<T> | undefined ) {
 				if ( !node )
 					return;
 
@@ -121,15 +121,15 @@ export class Node<TModel extends Model<any> = Model<any>> {
 		return path;
 	}
 
-	public walk( fn: NullableFn<TModel> = () => true, _options?: NodeOptions ) {
+	public walk( fn: NullableFn<T> = () => true, _options?: NodeOptions ) {
 		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
 		walkStrategies[ options.strategy ]( this, fn );
 	}
 
-	public all( fn: NullableFn<TModel> = () => true, _options?: NodeOptions ) {
-		const all: Node<TModel>[] = [];
+	public all( fn: NullableFn<T> = () => true, _options?: NodeOptions ) {
+		const all: Node<T>[] = [];
 		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
 
@@ -143,8 +143,8 @@ export class Node<TModel extends Model<any> = Model<any>> {
 		return all;
 	}
 
-	public first( fn: NullableFn<TModel> = () => true, _options?: NodeOptions ) {
-		let first: Node<TModel> | undefined = undefined;
+	public first( fn: NullableFn<T> = () => true, _options?: NodeOptions ) {
+		let first: Node<T> | undefined = undefined;
 
 		const options: NodeOptions = parseOptions( _options );
 		fn = fn || ( () => true );
@@ -159,7 +159,7 @@ export class Node<TModel extends Model<any> = Model<any>> {
 			return true;
 		} );
 
-		return first as Node<TModel> | undefined;
+		return first as Node<T> | undefined;
 	}
 
 	public drop() {
@@ -170,7 +170,7 @@ export class Node<TModel extends Model<any> = Model<any>> {
 
 		const indexOfChild = children.indexOf( this ) || 0;
 		children.splice( indexOfChild, 1 );
-		model[ this.config.childrenPropertyName ].splice( indexOfChild, 1 );
+		model[ this.config.childKey ].splice( indexOfChild, 1 );
 		this.parent = undefined;
 		delete this.parent;
 
