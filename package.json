@@ -1,6 +1,6 @@
 {
 	"name": "@roenlie/tree-model-ts",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"author": "Kristoffer Roen-Lie",
 	"license": "MIT",
 	"description": "An updated ESM & TS version of tree-model.",
